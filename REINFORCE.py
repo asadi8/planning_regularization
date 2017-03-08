@@ -86,5 +86,5 @@ def learn(run,
 			    actor.update(deltaList,batchEpisodeNumber,stepSize)
 			    deltaList=[]
 			    ### update actor by learning
-
+			info=info[:-25]
 			utils.printLog(episode,returnPerEpisode,frequency=100)
