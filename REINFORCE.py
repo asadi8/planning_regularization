@@ -1,18 +1,18 @@
 import numpy,sys
 import networkActor
 import gym
+import model
 import math
-import utils
-
+import utils_k
 
 def initializeForLearn(stepSize,numHidden,activation,hiddenSize):
-	environment='Freeway-v0'
+	environment='ModelBasedAtariFreeway-v0'
 	env = gym.make(environment)
 	obs=env.reset()
 	state_shape=None
 	if environment=='CartPole-v0':
 		state_shape=4
-	elif environment=='Freeway-v0':
+	elif environment=='Freeway-v0' or environment=="ModelBasedAtariFreeway-v0":
 		state_shape=env.observation_space.shape
 	actor=networkActor.networkLog(state_shape,env.action_space.n,numHidden,activation,hiddenSize,environment)#build actor
 	return env,actor,[]
@@ -25,6 +25,7 @@ def interactOneEpisode(env,actor):
 	rep=rep.reshape((1,)+rep.shape)
 	reps=[]
 	while True:
+		print(t)
 		action=actor.action_selection(rep)
 		rep_prime,r,done,_= env.step(action)
 		rep_prime=rep_prime.reshape((1,)+rep_prime.shape)
@@ -32,7 +33,7 @@ def interactOneEpisode(env,actor):
 		rep,t=(rep_prime,t+1)
 		if done==True:
 			break
-	returns=utils.rewardToReturn(rewards,gamma)
+	returns=utils_k.rewardToReturn(rewards,gamma)
 	return returns,reps,actions,rewards
 
 def REINFORCEUpdate(actor,returns,reps,actions,num_actions,efficient=True):
@@ -75,6 +76,7 @@ def learn(run,
 			print("episode number:",episode)
 			### interact in the environment for one episode and store relevant information
 			returns,reps,actions,rewards=interactOneEpisode(env,actor)
+			print("return:",returns[0])
 			info.append((returns,reps,actions,rewards))
 			returnPerEpisode.append(returns[0])
 			deltaListEpisode=REINFORCEUpdate(actor,returns,reps,actions,env.action_space.n)
@@ -86,5 +88,5 @@ def learn(run,
 			    actor.update(deltaList,batchEpisodeNumber,stepSize)
 			    deltaList=[]
 			    ### update actor by learning
-			info=info[:-25]
-			utils.printLog(episode,returnPerEpisode,frequency=100)
+
+			utils_k.printLog(episode,returnPerEpisode,frequency=100)

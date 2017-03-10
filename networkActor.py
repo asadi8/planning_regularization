@@ -11,7 +11,7 @@ class networkLog:
         def __init__(self,repSize,actionSize,numHidden,activation,hiddenSize,environment):
             if environment=="CartPole-v0":
                 self.build_cartpole(repSize,actionSize,numHidden,activation,hiddenSize)
-            elif environment=="Freeway-v0":
+            elif environment=="Freeway-v0" or environment=="ModelBasedAtariFreeway-v0":
                 self.build_freeway(repSize,actionSize)
             self.gradient=grad(self)
                 
@@ -57,12 +57,11 @@ class networkLog:
             return action   
 
 def grad(self):
-        params=[]
-        for layer in self.model.layers:
-                params += keras.engine.training.collect_trainable_weights(layer)
+        #print(self.model)
+        params=self.model.weights
         netInputs=self.model.input
         netOutputs=numpy.log(self.model.output.flatten())
-        gradients=[jacobian(netOutputs,w) for w in params]
+        gradients=[jacobian(netOutputs,w) for w in self.model.weights]
         return K.function(inputs=[netInputs],
                           outputs=gradients,
                           updates=self.model.state_updates)
